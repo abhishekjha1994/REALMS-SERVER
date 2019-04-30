@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="apple-touch-icon" sizes="76x76" href="assets/images/icons/apple-icon-76x76.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/images/icons/favicon-32x32.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="author" content="REGENT Light Management Systems">
+    <title>Registration page</title>
+    <!-- Bootstrap Core CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="form-align">
+                <div class="form-box">
+                        <form style="max-width:300px;margin:auto" id="register_user">
+                            <img  class="img-responsive" src="assets/images/Regent_Lighting_logo.png" width="100%" style="padding:10%;">
+                            <div class="input-container">
+                                <i class="fa fa-user icon"></i>
+                                <input class="input-field" type="text" placeholder="Username" id="username" required>
+                            </div>
+                            
+                            <div class="input-container">
+                                <i class="fa fa-key icon"></i>
+                                <input class="input-field" type="password" placeholder="Password" id="password" required>
+                            </div>
+                            
+                            <div class="input-container">
+                                <i class="fa fa-envelope icon"></i>
+                                <input class="input-field" type="email" placeholder="Email" id="email" required>
+                            </div>
+                        
+                            <div class="input-container">
+                                <i class="fa fa-mobile icon fa-lg"></i>
+                                <input class="input-field" type="number" pattern="\d*" minlength="10" maxlength="10" placeholder="Mobile number" id="mobileNumber" required>
+                            </div>
+                            
+                            <button type="submit" class="submit_btn">REGISTER</button>
+                        </form>
+                        <div class="clearfix" style="margin-top:20px;">
+                            <div style="float: left;">
+                                <i class="fa fa-user"></i>
+                                <a href="login.html" style="color:black">Sign In</a>
+                            </div>
+                            <div style="float: right;">
+                                <i class="fa fa-question-circle"></i>
+                                <a href="#" style="color:black">Help</a>
+                            </div>
+                        </div>
+                </div>
+                
+            </div>
+        </div>
+    </div>  
+
+    <!-- Bootstrap Core CSS -->
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <!-- Bootstrap Core CSS -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <!--Custom JS-->
+    <script src="assets/js/authentication.js"></script>
+</body>
+</html>

@@ -1,0 +1,99 @@
+/* Removing Number Spinner */
+input[type=number]::-webkit-inner-spin-button, 
+input[type=number]::-webkit-outer-spin-button { 
+    -webkit-appearance: none; 
+    margin: 0; 
+}
+
+body{
+    background-color: #F5F7F9; font-family: seccathin,"Helvetica Neue",Helvetica,Arial,sans-serif;
+}
+
+
+.input-container {
+    display: -ms-flexbox; /* IE10 */
+    display: flex;
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+.icon {
+    padding-top: 20px;
+    min-width: 50px;
+    text-align: center;
+    color:black;
+}
+
+.input-field {
+    width: 100%;
+    padding: 10px;
+    outline: none;
+    border:0px;
+    border-bottom: 2px solid grey;
+    background-color: #F5F7F9;
+}
+
+.input-field:focus {
+    border-bottom: 2px solid black;
+}
+
+/* Set a style for the submit button */
+.submit_btn {
+    background-color:#F5F7F9;
+    padding: 15px 20px;
+    font-size:16px;
+    border: 1px solid grey;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%;
+    opacity: 0.9;
+    margin:20px 0 0 0; 
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+.submit_btn:hover {
+    background-color:#000;
+    color: #fff;
+    transition-duration: 0.3s, 0.3s, 0.3s, 0.3s;
+    transition-timing-function: ease-in-out, ease-in-out, ease-in-out, ease-in-out;
+    transition-delay: 0s, 0s, 0s, 0s;
+}
+
+.cancel_btn{
+    background-color:#d3d3d3;
+    padding: 15px 20px;
+    font-size:16px;
+    border: 0;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%;
+    opacity: 0.9;
+    margin:20px 0 0 0; 
+    font-weight: bold;
+    letter-spacing: 1px;
+    color:black;
+}
+
+.form-align{
+    margin: auto;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    -ms-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+}
+.form-box{
+    padding:20px;
+    box-shadow: 0 0 5px rgba(0,0,0,0.6);
+    -moz-box-shadow: 0 0 5px rgba(0,0,0,0.6);
+    -webkit-box-shadow: 0 0 5px rgba(0,0,0,0.6);
+    -o-box-shadow: 0 0 5px rgba(0,0,0,0.6);
+    border-radius: 20px;
+}
+
+.forgotPass{
+    display: inline-block;
+    padding:10px;color:grey;
+}
+
