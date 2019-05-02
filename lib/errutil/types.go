@@ -1,131 +1,370 @@
-package models
+package errutil
 
 import (
-	"database/sql"
-
-	"github.com/go-gorp/gorp"
-	_ "github.com/lib/pq" //for postgres
-	"github.com/revel/revel"
-
-	eu "github.com/streetcom/lib/errutil"
+	"encoding/json"
+	"strconv"
+	"time"
 )
 
-const (
-	MAX_GEO_LEVEL = 6 //max number of levels in geotree
-)
+func Blank(id interface{}) bool {
 
-var (
-	// Dbm is db handle
-	Dbm *gorp.DbMap
-)
+	// lets only do type assertion and not type conversio for basic types.
+	// 3x slow.. type-converion 6x slow.. but ok
+	switch id.(type) {
+	case int, int32, int64:
+		if id == 0 {
+			return true
+		}
+	case uint, uint32, uint64:
+		if id == 0 {
+			return true
+		}
 
-func init() {
-	initDB()
-	updateModels()
-}
+	case float32, float64:
+		if id == 0.0 {
+			return true
+		}
 
-func initDB() {
-	var dbInfo string
+	case json.Number:
+		n, _ := strconv.ParseFloat(string(id.(json.Number)), 64)
+		if n == 0.0 {
+			return true
+		}
 
-	dbLocal := false
-	if dbLocal {
-		revel.INFO.Println("RUNNING IN DEV MODE. DATABASE WILL BE LOCAL")
-		dbInfo = "port=5432 user=postgres password=password dbname=StreetcomLudhiana sslmode=disable"
-	} else { //Test database
-		revel.INFO.Println("RUNNING IN PROD MODE. DATABASE WILL BE RDS")
-		//dbInfo = "host=sc-dev-new.cqwf1pvghoch.us-west-2.rds.amazonaws.com user=scdevadmin password=Ch!pm0nk18 " +
-		//	"dbname=LudhianaMod sslmode=disable"
-		dbInfo = "host=chipmonkdb.ckidpyxivgoi.ap-south-1.rds.amazonaws.com user=raghavkm password=ch!pMonk " +
-			"dbname=StreetcomLudhiana sslmode=disable"
-		//dbInfo = "host=stcomm-ludh-dev-db.ca3dsakdzuj7.ap-south-1.rds.amazonaws.com user=SCH0019_RW password=zNk78g7Vuv " +
-		//"dbname=STComm-Ludh-QA-DB sslmode=disable"
-	}
+	case nil:
+		return true
 
-	// } else {
-	// 	revel.INFO.Println("RUNNING IN PROD MODE. DATABASE WILL BE RDS")
-	// 	dbInfo = "host=scdemoall.cqwf1pvghoch.us-west-2.rds.amazonaws.com user=havellsDbAdmin password=testD3m0.All " +
-	// 		"dbname=scLudhiana sslmode=disable"
-	// }
+	case string:
+		if id == "" {
+			return true
+		}
 
-	Db, err := sql.Open("postgres", dbInfo)
-	if Db == nil || err != nil {
-		revel.ERROR.Println("could not connect to postgres", dbInfo)
-		panic(err)
-	}
-	Dbm = &gorp.DbMap{Db: Db, Dialect: gorp.PostgresDialect{}}
-}
-
-func updateModels() {
-	setColumnSizes := func(t *gorp.TableMap, colSizes map[string]int) {
-		for col, size := range colSizes {
-			t.ColMap(col).MaxSize = size
+	case bool:
+		if id == false {
+			return true
 		}
 	}
-	t := Dbm.AddTableWithName(Users{}, "users").SetKeys(true, "Id")
-	t.ColMap("Password").Transient = true
-	setColumnSizes(t, map[string]int{
-		"Username": 50,
-		"Name":     100,
-	})
+	return false
+}
 
-	t = Dbm.AddTableWithName(Light{}, "light")
-	t = Dbm.AddTableWithName(Report{}, "report").SetKeys(true, "Id")
+func Present(id interface{}) bool {
+	return !Blank(id)
+}
 
-	//Create geo tree tables  @handle dynamically
-	t = Dbm.AddTableWithName(LevelRoot{}, "level1")
+func ToStr(id interface{}) string {
+	switch id.(type) {
+	case uint:
+		return strconv.FormatUint(uint64(id.(uint)), 10)
+	case uint8:
+		return strconv.FormatUint(uint64(id.(uint8)), 10)
+	case uint16:
+		return strconv.FormatUint(uint64(id.(uint16)), 10)
+	case uint32:
+		return strconv.FormatUint(uint64(id.(uint32)), 10)
+	case uint64:
+		return strconv.FormatUint(uint64(id.(uint64)), 10)
 
-	//Add child table
-	t = Dbm.AddTableDynamic(&Level2, "").SetKeys(true, "Id")
-	t = Dbm.AddTableDynamic(&Level3, "").SetKeys(true, "Id")
-	t = Dbm.AddTableDynamic(&Level4, "").SetKeys(true, "Id")
-	t = Dbm.AddTableDynamic(&Level5, "").SetKeys(true, "Id")
-	t = Dbm.AddTableDynamic(&Rphase, "").SetKeys(true, "Id")
-	t = Dbm.AddTableDynamic(&Yphase, "").SetKeys(true, "Id")
-	t = Dbm.AddTableDynamic(&Bphase, "").SetKeys(true, "Id")
-	err1 := Dbm.CreateTablesIfNotExists()
-	eu.CheckErr(err1, "Error in creating Dynamic tables")
+	case int:
+		return strconv.FormatInt(int64(id.(int)), 10)
+	case int8:
+		return strconv.FormatInt(int64(id.(int8)), 10)
+	case int16:
+		return strconv.FormatInt(int64(id.(int16)), 10)
+	case int32:
+		return strconv.FormatInt(int64(id.(int32)), 10)
+	case int64:
+		return strconv.FormatInt(int64(id.(int64)), 10)
 
-	//Add GeoLight which is actual light lamp located somewhere
-	t = Dbm.AddTableWithName(GeoLight{}, "geo_light")
-	//Add Devtech energy misc table
-	t = Dbm.AddTableWithName(DTMisc{}, "dtenergymisc")
-	//Add light location
-	t = Dbm.AddTableWithName(LightLocation{}, "light_location")
-	//Add schedule table
-	//	t = Dbm.AddTableWithName(WirepassSchedule{}, "wirepas_schedule").SetKeys(true, "ID")
-	//	t = Dbm.AddTableWithName(DimSchedule{}, "dim_schedule").SetKeys(false,
-	//		"StartTime", "Dim", "Transition")
-	//	t = Dbm.AddTableWithName(CCTSchedule{}, "cct_schedule").SetKeys(false,
-	//		"StartTime", "Dim", "CCT", "Transition")
-	//	t = Dbm.AddTableWithName(RGBSchedule{}, "rgb_schedule").SetKeys(false,
-	//		"StartTime", "Red", "Green", "Blue", "Transition")
-	//	t = Dbm.AddTableWithName(DevtechSchedule{}, "devtech_schedule").SetKeys(false,
-	//		"StartTime", "Dim")
-	//	t = Dbm.AddTableWithName(LightSchedule{}, "light_schedule").SetKeys(false, "Level", "ID")
+	case float32:
+		return strconv.FormatFloat(float64(id.(float32)), 'E', -1, 32)
+	case float64:
+		return strconv.FormatFloat(float64(id.(float64)), 'E', -1, 64)
 
-	//t = Dbm.AddTableWithName(LightSchedules{}, "light_schedule")
-	t = Dbm.AddTableWithName(LightSchedules{}, "lightSchedules")
-	t = Dbm.AddTableWithName(DevtSchedule{}, "devtech_schedule").SetKeys(true, "ID")
-	t = Dbm.AddTableWithName(NBSchedule{}, "schedules").SetKeys(true, "Id")
-	//Status of different lights
-	t = Dbm.AddTableWithName(LightStatus{}, "light_status").SetKeys(false, "ID", "Level")
-	t = Dbm.AddTableWithName(LoraStatus{}, "lora_status").SetKeys(true, "ID")
+	case json.Number:
+		return string(id.(json.Number))
 
-	//Add lorawan lights data table
-	t = Dbm.AddTableWithName(UplinkPayload{}, "uplink_payload").SetKeys(false, "Deveui", "ID")
-	t = Dbm.AddTableWithName(DownlinkPayloadStatus{}, "downlink_status").SetKeys(false,
-		"Deveui", "ID", "TransmissionStatus")
-	t = Dbm.AddTableWithName(NodeInfo{}, "node_info").SetKeys(true, "ID")
-	t = Dbm.AddTableWithName(JoinInfo{}, "join_info").SetKeys(true, "ID")
-	t = Dbm.AddTableWithName(NodeStatus{}, "node_status").SetKeys(false, "ID")
-	t = Dbm.AddTableWithName(ElectricMap{}, "electric_map").SetKeys(false, "LightID")
-	t = Dbm.AddTableWithName(EnergyNode{}, "energy_receiver").SetKeys(true, "ID")
+	case string:
+		return id.(string)
+	}
+	return ""
+}
 
-	Dbm.TraceOn("[gorp]", revel.INFO)
-	err := Dbm.CreateTablesIfNotExists()
-	eu.CheckErr(err, "Error in creating tables")
+func ToUint64(id interface{}) uint64 {
+	switch id.(type) {
+	case uint:
+		return uint64(id.(uint))
+	case uint8:
+		return uint64(id.(uint8))
+	case uint16:
+		return uint64(id.(uint16))
+	case uint32:
+		return uint64(id.(uint32))
+	case uint64:
+		return id.(uint64)
 
-	//add some test content
-	//bcryptPassword, _ := bcrypt.GenerateFromPassword([]byte("havells"), bcrypt.DefaultCost)
-	//user := &User{0, "operator havells", "havells", "havells", bcryptPassword}
+	case int:
+		return uint64(id.(int))
+	case int8:
+		return uint64(id.(int8))
+	case int16:
+		return uint64(id.(int16))
+	case int32:
+		return uint64(id.(int32))
+	case int64:
+		return uint64(id.(int64))
+
+	case float32:
+		return uint64(id.(float32))
+	case float64:
+		return uint64(id.(float64))
+
+	case json.Number:
+		n, err := strconv.ParseUint(string(id.(json.Number)), 10, 64)
+		if err == nil {
+			return n
+		}
+
+	case string:
+		n, err := strconv.Atoi(id.(string))
+		if err == nil {
+			return uint64(n)
+		}
+	}
+	return 0
+}
+
+func ToInt64(id interface{}) int64 {
+	switch id.(type) {
+	case uint:
+		return int64(id.(uint))
+	case uint8:
+		return int64(id.(uint8))
+	case uint16:
+		return int64(id.(uint16))
+	case uint32:
+		return int64(id.(uint32))
+	case uint64:
+		return int64(id.(uint64))
+
+	case int:
+		return int64(id.(int))
+	case int8:
+		return int64(id.(int8))
+	case int16:
+		return int64(id.(int16))
+	case int32:
+		return int64(id.(int32))
+	case int64:
+		return id.(int64)
+
+	case float32:
+		return int64(id.(float32))
+	case float64:
+		return int64(id.(float64))
+
+	case json.Number:
+		n, err := strconv.ParseInt(string(id.(json.Number)), 10, 64)
+		if err == nil {
+			return n
+		}
+
+	case string:
+		n, err := strconv.Atoi(id.(string))
+		if err == nil {
+			return int64(n)
+		}
+	}
+	return 0
+}
+func ToUint32(id interface{}) uint32 {
+	switch id.(type) {
+	case uint:
+		return uint32(id.(uint))
+	case uint8:
+		return uint32(id.(uint8))
+	case uint16:
+		return uint32(id.(uint16))
+	case uint32:
+		return (id.(uint32))
+	case uint64:
+		return uint32(id.(uint64))
+
+	case int:
+		return uint32(id.(int))
+	case int8:
+		return uint32(id.(int8))
+	case int16:
+		return uint32(id.(int16))
+	case int32:
+		return uint32(id.(int32))
+	case int64:
+		return uint32(id.(int64))
+
+	case float32:
+		return uint32(id.(float32))
+	case float64:
+		return uint32(id.(float64))
+
+	case json.Number:
+		n, err := strconv.ParseUint(string(id.(json.Number)), 10, 32)
+		if err == nil {
+			return uint32(n)
+		}
+
+	case string:
+		n, err := strconv.Atoi(id.(string))
+		if err == nil {
+			return uint32(n)
+		}
+	}
+	return 0
+}
+
+func ToInt32(id interface{}) int32 {
+	switch id.(type) {
+	case uint:
+		return int32(id.(uint))
+	case uint8:
+		return int32(id.(uint8))
+	case uint16:
+		return int32(id.(uint16))
+	case uint32:
+		return int32(id.(uint32))
+	case uint64:
+		return int32(id.(uint64))
+
+	case int:
+		return int32(id.(int))
+	case int8:
+		return int32(id.(int8))
+	case int16:
+		return int32(id.(int16))
+	case int32:
+		return (id.(int32))
+	case int64:
+		return int32(id.(int64))
+
+	case float32:
+		return int32(id.(float32))
+	case float64:
+		return int32(id.(float64))
+
+	case json.Number:
+		n, err := strconv.ParseInt(string(id.(json.Number)), 10, 32)
+		if err == nil {
+			return int32(n)
+		}
+
+	case string:
+		n, err := strconv.Atoi(id.(string))
+		if err == nil {
+			return int32(n)
+		}
+	}
+	return 0
+}
+
+func ToFloat64(id interface{}) float64 {
+	switch id.(type) {
+	case uint:
+		return float64(id.(uint))
+	case uint8:
+		return float64(id.(uint8))
+	case uint16:
+		return float64(id.(uint16))
+	case uint32:
+		return float64(id.(uint32))
+	case uint64:
+		return float64(id.(uint64))
+
+	case int:
+		return float64(id.(int))
+	case int8:
+		return float64(id.(int8))
+	case int16:
+		return float64(id.(int16))
+	case int32:
+		return float64(id.(int32))
+	case int64:
+		return float64(id.(int64))
+
+	case float32:
+		return float64(id.(float32))
+	case float64:
+		return (id.(float64))
+
+	case json.Number:
+		n, err := strconv.ParseFloat(string(id.(json.Number)), 64)
+		if err == nil {
+			return n
+		}
+
+	case string:
+		n, err := strconv.ParseFloat(id.(string), 64)
+		if err == nil {
+			return (n)
+		}
+	}
+	return 0
+}
+
+func ToFloat32(id interface{}) float32 {
+	switch id.(type) {
+	case uint:
+		return float32(id.(uint))
+	case uint8:
+		return float32(id.(uint8))
+	case uint16:
+		return float32(id.(uint16))
+	case uint32:
+		return float32(id.(uint32))
+	case uint64:
+		return float32(id.(uint64))
+
+	case int:
+		return float32(id.(int))
+	case int8:
+		return float32(id.(int8))
+	case int16:
+		return float32(id.(int16))
+	case int32:
+		return float32(id.(int32))
+	case int64:
+		return float32(id.(int64))
+
+	case float32:
+		return (id.(float32))
+	case float64:
+		return float32(id.(float64))
+
+	case json.Number:
+		n, err := strconv.ParseFloat(string(id.(json.Number)), 32)
+		if err == nil {
+			return float32(n)
+		}
+
+	case string:
+		n, err := strconv.ParseFloat(id.(string), 32)
+		if err == nil {
+			return float32(n)
+		}
+	}
+	return 0
+}
+
+func ToInt(id interface{}) int {
+	return int(ToInt64(id))
+}
+
+func ToId(id interface{}) uint64 {
+	return ToUint64(id)
+}
+
+func ToTime(id interface{}) int64 {
+	return int64(ToId(id))
+}
+
+// unixtimestamp in Millisecond
+func UnixTime() int64 {
+	return int64(time.Nanosecond) * (time.Now().UnixNano() / int64(time.Millisecond))
 }

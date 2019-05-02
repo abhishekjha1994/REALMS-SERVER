@@ -4,6 +4,10 @@ import (
 	"fmt"
 
 	"github.com/revel/revel"
+	"github.com/Realms-Server/app/models"
+	"golang.org/x/crypto/bcrypt"
+	"github.com/Realms-Server/app/routes"
+	//"github.com/Realms-Server/app/views"
 )
 
 type Reg struct {
@@ -12,7 +16,7 @@ type Reg struct {
 	Email        string `json:"email"`
 	MobileNumber string `json:"mobile_num"`
 }
-type logi struct {
+type login struct {
 	Email string `json:"email"`
 	Pass  string `json:"pass"`
 }
@@ -21,15 +25,15 @@ type App struct {
 	GorpController
 }
 
-func (c Admin) Registration() revel.Result {
+func (c App) Registration() revel.Result {
 	user := c.connected()
 	if user == nil {
 		return c.Render()
 	}
-	return c.Redirect(login.html)
+return c.Redirect(App.login)
 }
 
-func (c App) connected() *models.Reg {
+func (c App) connected() *models.Users {
 	if c.ViewArgs["user"] != nil {
 		return c.ViewArgs["user"].(*models.Users)
 	}
@@ -38,8 +42,23 @@ func (c App) connected() *models.Reg {
 	}
 	return nil
 }
+func (c App) App(user *models.Users, password string) bool {
+	err := bcrypt.CompareHashAndPassword(user.HashedPassword, []byte(password))
+	if err == nil {
+		return true
+	}
+	return false
+}
+func (c App) login() revel.Result {
+	//add more code
+	return c.Render()
+}
+func (c App)Homepage() revel.Result {
+	//add more code
+	return c.Render()
+}
 
-func (c App) Login(email, password string, remember bool) revel.Result {
+func (c App)Login(email string, password string, remember bool)revel.Result {
 	user := c.GetUser(email)
 	remember = true
 
@@ -54,15 +73,15 @@ func (c App) Login(email, password string, remember bool) revel.Result {
 			} else {
 				c.Session.SetNoExpiration()
 			}
-			revel.INFO.Println("email IS:", user.email)
+			revel.INFO.Println("email IS:", user.Email)
 
-			return c.Redirect(home.html)
-		}
+			return c.Redirect(App.Homepage)
+		}	
 
 	}
 	c.Flash.Out["email"] = email
 	c.Flash.Error("Invalid email or password")
-	return c.Redirect(routes.Login.html())
+	return c.Redirect(App.login)
 	//		c.Flash.Out["username"] = username
 	//		c.Flash.Error("Invalid username or password")
 	//		return c.Redirect(routes.App.LoginPage())
@@ -73,11 +92,17 @@ func (c App) GetUser(email string) *models.Users {
 	var user models.Users
 	err := models.Dbm.SelectOne(&user, query)
 	if err != nil {
-		fmt.Println("Error selectting user from DB for email : ", email, " Error: ", err)
-		revel.ERROR.Println("Error selectting user from DB for email : ", email, " Error: ", err)
+		fmt.Println("Error selecting user from DB for email : ", email, " Error: ", err)
+		revel.ERROR.Println("Error selecting user from DB for email : ", email, " Error: ", err)
 		return nil
 	}
 	return &user
 }
 
+func (c App) AddUser() revel.Result {
+	if user := c.connected(); user != nil {
+		c.ViewArgs["user"] = user
+	}
+	return nil
+}
 //function for forget password

@@ -12,9 +12,9 @@ type Admin struct {
 	App
 }
 
-func (a *Admin) Index() revel.Result {
-	return a.Render()
-}
+// func (a *Admin) Index() revel.Result {
+// 	return a.Render()
+// }
 
 // func (c Admin) checkUser() revel.Result {
 // 	user := c.connected()

@@ -3,8 +3,8 @@ package models
 import (
 	"database/sql"
 
-	eu "github.com/REALMS-SERVER/lib/errutil"
-	"github.com/go-gorp/gorp"
+	eu "github.com/Realms-Server/lib/errutil"
+	   "github.com/go-gorp/gorp"
 	_ "github.com/lib/pq" //for postgres
 	"github.com/revel/revel"
 )
@@ -37,7 +37,7 @@ func updateModels() {
 			t.ColMap(col).MaxSize = size
 		}
 	}
-	t := Dbm.AddTableWithName(Reg{}, "users")
+	t := Dbm.AddTableWithName(Users{}, "users")
 	t.ColMap("Password").Transient = true
 	setColumnSizes(t, map[string]int{
 		"Username": 50,

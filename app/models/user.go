@@ -33,7 +33,7 @@ func (user *Users) Validate(v *revel.Validation) {
 	ValidatePassword(v, user.Password).
 		Key("user.Password")
 
-	v.Check(user.Name,
+	v.Check(user.Username,
 		revel.Required{},
 		revel.MaxSize{100},
 	)
@@ -49,7 +49,7 @@ func ValidatePassword(v *revel.Validation, password string) *revel.ValidationRes
 
 //Createsa a new user in DB
 func AddUser(username string, email string, hashed []byte, mobile_num string) (bool, error) {
-	userDetails := Users{Username: username, Email: email, HashedPassword: hashed, mobile_num: mobile_num}
+	userDetails := Users{Username: username, Email: email, HashedPassword: hashed, MobileNumber: mobile_num}
 	err := Dbm.Insert(&userDetails)
 	if err != nil {
 		log.Println("Error creating New User : ", err)

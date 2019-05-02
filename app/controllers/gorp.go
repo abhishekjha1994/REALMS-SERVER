@@ -10,7 +10,7 @@ import (
 	//"github.com/revel/modules/db/app"
 	"github.com/revel/revel"
 
-	"github.com/regent/app/models"
+	"github.com/Realms-Server/app/models"
 )
 
 type GorpController struct {
